@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Teacher Management</h2>
+    <hr>
+
+    <!-- Form to create a new teacher -->
+    <form id="teacherForm">
+        <div class="form-group">
+            <label for="teacherName">Teacher Name:</label>
+            <input type="text" class="form-control" id="teacherName" name="name" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Teacher</button>
+    </form>
+
+    <hr>
+
+    <!-- Table to display existing teachers -->
+    <h3>Existing Teachers</h3>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="teacherTableBody">
+        <!-- Teacher records will be dynamically inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- JavaScript to handle form submission and AJAX -->
+<script>
+    $(document).ready(function () {
+        // Function to fetch and display all teachers
+        function fetchTeachers() {
+            $.get("/api/teachers", function (teachers) {
+                $("#teacherTableBody").empty();
+                teachers.forEach(function (teacher) {
+                    $("#teacherTableBody").append(
+                        `<tr>
+                            <td>${teacher.id}</td>
+                            <td>${teacher.name}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTeacher(${teacher.id})">Delete</button>
+                            </td>
+                         </tr>`
+                    );
+                });
+            });
+        }
+
+        // Fetch teachers on page load
+        fetchTeachers();
+
+        // Handle form submission for adding a new teacher
+        $("#teacherForm").submit(function (event) {
+            event.preventDefault();
+            var formData = {
+                "name": $("#teacherName").val()
+            };
+            $.post("/api/teachers", formData, function () {
+                fetchTeachers();
+                $("#teacherForm")[0].reset();
+            });
+        });
+
+        // Function to delete a teacher
+        window.deleteTeacher = function (teacherId) {
+            $.ajax({
+                url: `/api/teachers/${teacherId}`,
+                type: 'DELETE',
+                success: function () {
+                    fetchTeachers();
+                }
+            });
+        };
+    });
+</script>
+
+</body>
+</html>
+
+
